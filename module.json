@@ -2,7 +2,7 @@
   "id": "vaal-tools",
   "title": "vaal Tools",
   "description": "Player notifications and reaction assistance for Pathfinder Second Edition.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "authors": [
     {
       "name": "CeJoW"
@@ -19,10 +19,26 @@
         "id": "pf2e",
         "type": "system"
       }
+    ],
+    "requires": [
+      {
+        "compatibility": {
+          "minimum": "2.20.2"
+        },
+        "id": "pf2e-summons-assistant",
+        "type": "module"
+      },
+      {
+        "compatibility": {
+          "minimum": "1.2.0"
+        },
+        "id": "tcal",
+        "type": "module"
+      }
     ]
   },
   "esmodules": [
-    "scripts/main.js"
+    "scripts/reactions.js"
   ],
   "languages": [
     {
