@@ -1,0 +1,4 @@
+{
+  "VAAL.Settings.Enabled.Name": "Reaction notifications",
+  "VAAL.Settings.Enabled.Hint": "Receive prompts to use a reaction. Reaction handlers are not implemented in this scaffold yet."
+}
