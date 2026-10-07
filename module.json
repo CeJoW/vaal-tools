@@ -1,8 +1,8 @@
 {
   "id": "vaal-tools",
   "title": "vaal Tools",
-  "description": "Player notifications and reaction assistance for Pathfinder Second Edition.",
-  "version": "0.2.1",
+  "description": "Player reaction assistance for PF2e. Distance automation requires scene units in feet (ft). Inevitable Return uses PF2e Summons Assistant and TCAL; see INTEGRATIONS.md.",
+  "version": "0.2.5",
   "authors": [
     {
       "name": "CeJoW"

@@ -12,6 +12,14 @@ export function installSheetControls(request){
       counter.textContent=` Реакции: ${current.normal}/1${current.extra?' (+1 Inevitable Return)':''}`;
       counter.title='Общий запас для всех реакций. Восстанавливается в начале вашего хода.';
       counter.style.cssText='font-weight:bold;margin:0 8px;font-size:12px';header.append(counter);
+      const restore=document.createElement('button');restore.type='button';restore.dataset.vaalSheet='restore';
+      restore.textContent='↺';restore.title='Восстановить реакции вручную';restore.setAttribute('aria-label','Восстановить реакции вручную');
+      restore.style.cssText='flex:0 0 auto;width:24px;min-height:20px;padding:0;margin:0 4px';
+      restore.addEventListener('click',async event=>{
+        event.preventDefault();event.stopPropagation();restore.disabled=true;
+        try{await request('reset',{actor:actor.uuid});}finally{restore.disabled=false;}
+      });
+      header.append(restore);
     }
     for(const row of root.querySelectorAll('li.action[data-item-id]')){
       const item=actor.items.get(row.dataset.itemId);

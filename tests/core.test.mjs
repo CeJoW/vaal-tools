@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {eligible,remaining,spend,ability,SOURCE} from '../scripts/core.mjs';
+import {eligible,remaining,spend,ability,SOURCE,normalizeState,resetState,usesFeet,refundOperation} from '../scripts/core.mjs';
 const base={ability:true,canAct:true,enemy:true,size:'sm',distance:30,available:1,sameLevel:true};
 test('range, size and eligibility boundaries',()=>{assert.equal(eligible(base),true);for(const patch of [{size:'lg'},{size:'tiny'},{distance:30.01},{distance:NaN},{enemy:false},{ability:false},{canAct:false},{available:0},{sameLevel:false}])assert.equal(eligible({...base,...patch}),false);assert.equal(eligible({...base,size:'med'}),true);});
 test('ordinary reaction used once',()=>{const s=spend({},false);assert.equal(remaining(s).normal,0);assert.throws(()=>spend(s,false));});
 test('Endless Return is consumed before general reaction',()=>{const s=spend({},true);assert.deepEqual(remaining(s,true),{normal:1,extra:0});const last=spend(s,true);assert.deepEqual(remaining(last,true),{normal:0,extra:0});assert.throws(()=>spend(last,true));});
 test('ability identity independent of translation',()=>{assert.ok(ability({items:[{sourceId:SOURCE}]},'inevitable-return'));assert.ok(ability({items:[{system:{slug:'inevitable-return'}}]},'inevitable-return'));assert.equal(ability({items:[{name:'Inevitable Return'}]},'inevitable-return'),undefined);});
+test('reset survives Foundry object merge',()=>{const old={normalSpent:true,extraSpent:true};const merged={...old,...resetState()};assert.deepEqual(remaining(merged,true),{normal:1,extra:1});});
+test('failed summon rollback restores previously absent flags',()=>{const before=normalizeState({});const spent=spend(before,false);assert.equal(remaining(spent).normal,0);assert.equal(remaining({...spent,...before}).normal,1);});
+test('feet only; never treat meters or missing units as feet',()=>{for(const u of ['ft','FT',' feet ','футов'])assert.equal(usesFeet(u),true);for(const u of ['m','meters','метры','',null,undefined,'yards'])assert.equal(usesFeet(u),false);});
+test('undo only refunds its own reaction slot',()=>{const s={normalSpent:true,normalOperation:'other',extraSpent:true,extraOperation:'return'};assert.deepEqual(refundOperation(s,'normal','return'),s);const r=refundOperation(s,'extra','return');assert.equal(r.extraSpent,false);assert.equal(r.normalSpent,true);assert.deepEqual(refundOperation(resetState(),'extra','return'),resetState());});
