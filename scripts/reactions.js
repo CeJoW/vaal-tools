@@ -1,5 +1,6 @@
 import {ability,eligible,remaining,spend} from './core.mjs';
 import {createThrall} from './thrall.js';
+import {installSheetControls} from './sheet.js';
 const ID='vaal-tools';
 const flag=(d,k)=>d.getFlag(ID,k);
 const gm=()=>game.user.id===game.users.activeGM?.id;
@@ -46,6 +47,23 @@ async function processRequest(m){
   const r=flag(m,'request');if(!r||flag(m,'processed'))return;
   await m.setFlag(ID,'processed',true);
   const user=m.author;if(!user?.active)return;
+  if(r.action==='sheet-use'){
+    const a=await fromUuid(r.actor),item=a?.items?.get(r.item);
+    if(!a?.testUserPermission(user,'OWNER')||item?.actionCost?.type!=='reaction'||!a.canAct||ability(a,'inevitable-return')?.id===item.id)return;
+    const before=state(a),frequency=item.system.frequency?{...item.system.frequency}:null;
+    if(!remaining(before).normal||frequency?.value===0)return;
+    await a.setFlag(ID,'reactions',{...before,normalSpent:true});
+    try{
+      if(frequency)await item.update({'system.frequency.value':frequency.value-1});
+      await item.toMessage();
+    }catch(error){
+      await a.setFlag(ID,'reactions',before);
+      if(frequency)await item.update({'system.frequency.value':frequency.value});
+      throw error;
+    }
+    if(available(a)===0)await closePrompts(a);
+    return;
+  }
   if(['spent','reset'].includes(r.action)){
     const a=await fromUuid(r.actor);if(!a?.testUserPermission(user,'OWNER')||(r.action==='reset'&&!user.isGM))return;
     await a.setFlag(ID,'reactions',r.action==='reset'?{}:{...state(a),normalSpent:true});if(r.action==='reset'||available(a)===0)await closePrompts(a);return;
@@ -87,6 +105,7 @@ Hooks.once('init',()=>{
 Hooks.once('ready',()=>{
   if(game.system.id!=='pf2e')return;
   game.modules.get(ID).api={reactions:panel};
+  installSheetControls(request);
   console.info('vaal Tools | Inevitable Return ready');
   for(const event of ['updateActor','updateToken','createItem','updateItem','deleteItem','createActiveEffect','updateActiveEffect','deleteActiveEffect','updateCombatant'])Hooks.on(event,dirty);
   Hooks.on('createChatMessage',m=>{if(gm()&&flag(m,'request'))schedule(()=>processRequest(m));});
