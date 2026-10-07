@@ -10,7 +10,8 @@
   ],
   "compatibility": {
     "minimum": "14",
-    "maximum": "14"
+    "maximum": "14",
+    "verified": "14.368"
   },
   "relationships": {
     "systems": [
